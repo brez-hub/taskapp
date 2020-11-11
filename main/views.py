@@ -73,7 +73,7 @@ def taskCreate(request):
 
     return Response(serializer.data)
 
-#(JSON) Изменение + Кеш + COOKIE для изменённой записи
+#(JSON) Изменение + COOKIE для изменённой записи
 
 @api_view(['POST'])
 def taskUpdate(request, pk):

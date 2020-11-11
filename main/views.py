@@ -5,7 +5,7 @@ from .forms import TaskForm
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from .serializers import TaskSerializer
 
 
@@ -33,7 +33,7 @@ def create(request):
         'form': form
     }
     return render(request, 'main/create.html', context)
-
+#Работа с JSON объектами
 
 @api_view(['GET'])
 def overview(request):
@@ -46,17 +46,23 @@ def overview(request):
     }
     return Response(main_urls)
 
+#(JSON) Список
+
 @api_view(['GET'])
 def tasklist(request):
     task = Task.objects.all()
     serializer = TaskSerializer(task, many=True)
     return Response(serializer.data)
 
+#(JSON) Данные по ID
+
 @api_view(['GET'])
 def taskDetail(request, pk):
     task = Task.objects.get(id=pk)
     serializer = TaskSerializer(task, many=False)
     return Response(serializer.data)
+
+#(JSON) Создание
 
 @api_view(['POST'])
 def taskCreate(request):
@@ -67,15 +73,25 @@ def taskCreate(request):
 
     return Response(serializer.data)
 
+#(JSON) Изменение + Кеш + COOKIE для изменённой записи
+
 @api_view(['POST'])
 def taskUpdate(request, pk):
-    task = Task.objects.get(id=pk)
-    serializer = TaskSerializer(instance=task, data=request.data)
+    if pk in request.COOKIES:
+        tasks = Task.objects.order_by('id')
+        return render(request, 'main/index.html', {'title': 'Главная страница сайта', 'tasks': tasks})
+    else:
+        task = Task.objects.get(id=pk)
+        serializer = TaskSerializer(instance=task, data=request.data)
 
-    if serializer.is_valid():
-        serializer.save()
+        if serializer.is_valid():
+            serializer.save()
+            response = redirect('/')
+            response.set_cookie(pk, "update")
+            return response
+            return Response(serializer.data)
 
-    return Response(serializer.data)
+#(JSON) Удаление
 
 @api_view(['DELETE'])
 def taskDelete(request, pk):

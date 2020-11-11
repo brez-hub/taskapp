@@ -5,6 +5,9 @@ from django.views.decorators.cache import cache_page
 from . import views
 
 urlpatterns = [
+
+    # Кеширование главной страницы на 1 минуту
+
     path('', cache_page(60)(views.index), name='home'),
     path('about', views.about, name='about'),
     path('create', views.create, name='create'),
